@@ -30,10 +30,10 @@
 api全部遵循RESTFul规范，GET方法获取信息，POST方法上传信息，PUT修改信息，DELETE删除信息
 
 因为有时候有时间信息需要写在url中，可能包含空格，所以在发送前要进行转义，空格转义后为%20
-### /student/?:id
+### /user/?:id
 本路由支持GET,POST,PUT,DELETE类型请求
 #### GET
-如果是GET请求，则必需提供?:id部分，即/student/1的格式来访问，否则报错，返回的data包括id和name，不包括password
+如果是GET请求，则必需提供查询参数method，如果method为id，则为按id获取用户信息，必须提供?:id部分，即/student/1的格式来访问，否则报错，返回的data包括除了token外的全部信息，如果method为token，则为按token获取用户信息，不需要提供?:id，返回的data包括用户的全部信息。
 #### POST
 如果是POST请求，则请求体格式如下：
 ```
@@ -48,15 +48,16 @@ api全部遵循RESTFul规范，GET方法获取信息，POST方法上传信息，
 #### DELETE
 必须在url中提供参数id，返回内容没有额外信息
 
-### /teacher/?id
-和student完全一样，因为数据库结构暂时是一样的，但是分成了两个不同的表而已
-
 ### /course
 本路由支持GET,POST,PUT,DELETE类型请求
 #### GET
 供查询course使用，可选参数包括id,name,content,creator_id,offset,limit, 直接附在url尾部参数部分即可，返回的data中包括course表中所有的信息（也是唯一可以获取course_key的接口）
 #### POST
-供创建course使用，请求体中需要提供除了id和course_key以外的所有course信息，创建成功会返回id
+供创建course使用，必须提供method，如果method为data,则请求体中需要提供除了id和course_key以外的所有course信息，创建成功会返回id，如果method为head，则为上传头像，需要在参数中同时提供id，也就是/course?method=head&id=1类似的地址，表单文件栏的的name必须设为file，如下：
+```xml
+<input type="file" name="file">
+```
+
 #### PUT
 和POST类似，但是请求体中需要提供id，不会返回额外信息
 #### DELETE
@@ -110,6 +111,15 @@ get请求可供选择的url参数有roll_id和student_id和time，返回的data�
 
 如果method为getfile，则只需在url参数中提供id即可，会返回文件（注意文件名可能和上传的不一样，为了保证文件名不重复加了一些乱码进去，在前端可能要重命名一下）
 #### POST
-直接在url列表中提供course_id和name，body中传文件即可，成功会返回id
+直接在url列表中提供course_key, body中传文件即可(和上面上传头像一样)，成功会返回id
 #### DELETE
 在url参数中提供id即可，无额外返回信息
+
+### /charge_course
+本路由支持GET,POST,DELETE类型请求
+#### GET
+get请求可供选择的url参数有course_id和ta_id，返回的data也只包括course_id和ta_id
+#### POST
+在请求体中提供course_id和ta_id，不会返回id（因为这个id没有意义）
+#### DELETE
+在url可选参数有course_id和ta_id，如果没有任何信息被删除会返回错误信息

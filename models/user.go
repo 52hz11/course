@@ -9,45 +9,49 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type Student struct {
-	Id       int    `orm:"column(id);auto"`
-	Password string `orm:"column(password);size(40);null"`
-	Name     string `orm:"column(name);size(40);null"`
+type User struct {
+	Id     int    `orm:"column(id);pk"`
+	Name   string `orm:"column(name);size(40);null"`
+	Number uint   `orm:"column(number);null"`
+	Token  string `orm:"column(token);size(40);null"`
+	Email  string `orm:"column(email);size(40);null"`
+	School string `orm:"column(school);size(40);null"`
+	Type   uint   `orm:"column(type);null"`
 }
 
-func (t *Student) TableName() string {
-	return "student"
+func (t *User) TableName() string {
+	return "user"
 }
 
 func init() {
-	orm.RegisterModel(new(Student))
+	orm.RegisterModel(new(User))
 }
 
-// AddStudent insert a new Student into database and returns
+// AddUser insert a new User into database and returns
 // last inserted Id on success.
-func AddStudent(m *Student) (id int64, err error) {
+func AddUser(m *User) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
 	return
 }
 
-// GetStudentById retrieves Student by Id. Returns error if
+// GetUserById retrieves User by Id. Returns error if
 // Id doesn't exist
-func GetStudentById(id int) (v *Student, err error) {
+func GetUserById(id int) (v *User, err error) {
 	o := orm.NewOrm()
-	v = &Student{Id: id}
+	v = &User{Id: id}
 	if err = o.Read(v); err == nil {
 		return v, nil
 	}
 	return nil, err
 }
 
-// GetAllStudent retrieves all Student matches certain condition. Returns empty list if
+// GetAllUser retrieves all User matches certain condition. Returns empty list if
 // no records exist
-func GetAllStudent(query map[string]string, fields []string, sortby []string, order []string,
+func GetAllUser(query map[string]string, fields []string, sortby []string, order []string,
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(Student))
+	qs := o.QueryTable(new(User))
 	// query k=v
 	for k, v := range query {
 		// rewrite dot-notation to Object__Attribute
@@ -97,7 +101,7 @@ func GetAllStudent(query map[string]string, fields []string, sortby []string, or
 		}
 	}
 
-	var l []Student
+	var l []User
 	qs = qs.OrderBy(sortFields...)
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
 		if len(fields) == 0 {
@@ -120,11 +124,11 @@ func GetAllStudent(query map[string]string, fields []string, sortby []string, or
 	return nil, err
 }
 
-// UpdateStudent updates Student by Id and returns error if
+// UpdateUser updates User by Id and returns error if
 // the record to be updated doesn't exist
-func UpdateStudentById(m *Student) (err error) {
+func UpdateUserById(m *User) (err error) {
 	o := orm.NewOrm()
-	v := Student{Id: m.Id}
+	v := User{Id: m.Id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
@@ -135,17 +139,26 @@ func UpdateStudentById(m *Student) (err error) {
 	return
 }
 
-// DeleteStudent deletes Student by Id and returns error if
+// DeleteUser deletes User by Id and returns error if
 // the record to be deleted doesn't exist
-func DeleteStudent(id int) (err error) {
+func DeleteUser(id int) (err error) {
 	o := orm.NewOrm()
-	v := Student{Id: id}
+	v := User{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Delete(&Student{Id: id}); err == nil {
+		if num, err = o.Delete(&User{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}
 	return
+}
+
+func GetUserByToken(token string) (v *User, err error) {
+	o := orm.NewOrm()
+	v = &User{Token: token}
+	if err = o.Read(v, "Token"); err == nil {
+		return v, nil
+	}
+	return nil, err
 }

@@ -7,27 +7,27 @@ import (
 	"github.com/bitly/go-simplejson"
 )
 
-type InCourseController struct {
+type ChargeCourseController struct {
 	beego.Controller
 }
 
-func (this *InCourseController) Get() {
+func (this *ChargeCourseController) Get() {
 	course_id, err := this.GetInt("course_id")
 	if err != nil {
 		course_id = -1
 	}
-	student_id, err := this.GetInt("student_id")
+	ta_id, err := this.GetInt("ta_id")
 	if err != nil {
-		student_id = -1
+		ta_id = -1
 	}
-	records := models.QueryInCourse(course_id, student_id)
+	records := models.QueryChargeCourse(course_id, ta_id)
 	bodyJSON := simplejson.New()
 	bodyJSON.Set("status", "success")
 	tmpMapArr := make([]interface{}, len(records))
 	for i, r := range records {
 		tmpMap := make(map[string]interface{})
 		tmpMap["course_id"] = r.CourseId.Id
-		tmpMap["student_id"] = r.StudentId.Id
+		tmpMap["ta_id"] = r.StudentId.Id
 		tmpMapArr[i] = tmpMap
 	}
 	bodyJSON.Set("data", tmpMapArr)
@@ -35,22 +35,22 @@ func (this *InCourseController) Get() {
 	this.Ctx.Output.Body(body)
 }
 
-func (this *InCourseController) Post() {
+func (this *ChargeCourseController) Post() {
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		course_id := inputJSON.Get("course_id").MustInt()
-		student_id := inputJSON.Get("student_id").MustInt()
-		var incourse models.InCourse
+		ta_id := inputJSON.Get("ta_id").MustInt()
+		var chargecourse models.ChargeCourse
 		course, err := models.GetCourseById(course_id)
 		if err != nil {
 			this.Abort(models.ErrJson("course not exist"))
 		}
-		student, err := models.GetUserById(student_id)
+		ta, err := models.GetUserById(ta_id)
 		if err != nil {
 			this.Abort(models.ErrJson("student not exist"))
 		}
-		incourse.CourseId = course
-		incourse.StudentId = student
-		_, err = models.AddInCourse(&incourse)
+		chargecourse.CourseId = course
+		chargecourse.TaId = ta
+		_, err = models.AddChargeCourse(&chargecourse)
 		if err != nil {
 			this.Abort(models.ErrJson("this record already exist"))
 		} else {
@@ -61,21 +61,21 @@ func (this *InCourseController) Post() {
 	}
 }
 
-func (this *InCourseController) Delete() {
+func (this *ChargeCourseController) Delete() {
 	course_id, err := this.GetInt("course_id")
 	if err != nil {
 		course_id = -1
 	}
-	student_id, err := this.GetInt("student_id")
+	ta_id, err := this.GetInt("ta_id")
 	if err != nil {
-		student_id = -1
+		ta_id = -1
 	}
-	records := models.QueryInCourse(course_id, student_id)
+	records := models.QueryChargeCourse(course_id, ta_id)
 	if len(records) == 0 {
-		this.Abort(models.ErrJson("invalid in-course record"))
+		this.Abort(models.ErrJson("invalid charge-course record"))
 	} else {
 		for _, r := range records {
-			models.DeleteInCourse(r.Id)
+			models.DeleteChargeCourse(r.Id)
 		}
 		this.Ctx.Output.Body(models.SuccessJson())
 	}

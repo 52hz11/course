@@ -9,45 +9,45 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
-type Teacher struct {
-	Id       int    `orm:"column(id);auto"`
-	Password string `orm:"column(password);size(40);null"`
-	Name     string `orm:"column(name);size(40);null"`
+type ChargeCourse struct {
+	Id       int     `orm:"column(id);auto"`
+	CourseId *Course `orm:"column(course_id);rel(fk)"`
+	TaId     *User   `orm:"column(ta_id);rel(fk)"`
 }
 
-func (t *Teacher) TableName() string {
-	return "teacher"
+func (t *ChargeCourse) TableName() string {
+	return "charge_course"
 }
 
 func init() {
-	orm.RegisterModel(new(Teacher))
+	orm.RegisterModel(new(ChargeCourse))
 }
 
-// AddTeacher insert a new Teacher into database and returns
+// AddChargeCourse insert a new ChargeCourse into database and returns
 // last inserted Id on success.
-func AddTeacher(m *Teacher) (id int64, err error) {
+func AddChargeCourse(m *ChargeCourse) (id int64, err error) {
 	o := orm.NewOrm()
 	id, err = o.Insert(m)
 	return
 }
 
-// GetTeacherById retrieves Teacher by Id. Returns error if
+// GetChargeCourseById retrieves ChargeCourse by Id. Returns error if
 // Id doesn't exist
-func GetTeacherById(id int) (v *Teacher, err error) {
+func GetChargeCourseById(id int) (v *ChargeCourse, err error) {
 	o := orm.NewOrm()
-	v = &Teacher{Id: id}
+	v = &ChargeCourse{Id: id}
 	if err = o.Read(v); err == nil {
 		return v, nil
 	}
 	return nil, err
 }
 
-// GetAllTeacher retrieves all Teacher matches certain condition. Returns empty list if
+// GetAllChargeCourse retrieves all ChargeCourse matches certain condition. Returns empty list if
 // no records exist
-func GetAllTeacher(query map[string]string, fields []string, sortby []string, order []string,
+func GetAllChargeCourse(query map[string]string, fields []string, sortby []string, order []string,
 	offset int64, limit int64) (ml []interface{}, err error) {
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(Teacher))
+	qs := o.QueryTable(new(ChargeCourse))
 	// query k=v
 	for k, v := range query {
 		// rewrite dot-notation to Object__Attribute
@@ -97,7 +97,7 @@ func GetAllTeacher(query map[string]string, fields []string, sortby []string, or
 		}
 	}
 
-	var l []Teacher
+	var l []ChargeCourse
 	qs = qs.OrderBy(sortFields...)
 	if _, err = qs.Limit(limit, offset).All(&l, fields...); err == nil {
 		if len(fields) == 0 {
@@ -120,11 +120,11 @@ func GetAllTeacher(query map[string]string, fields []string, sortby []string, or
 	return nil, err
 }
 
-// UpdateTeacher updates Teacher by Id and returns error if
+// UpdateChargeCourse updates ChargeCourse by Id and returns error if
 // the record to be updated doesn't exist
-func UpdateTeacherById(m *Teacher) (err error) {
+func UpdateChargeCourseById(m *ChargeCourse) (err error) {
 	o := orm.NewOrm()
-	v := Teacher{Id: m.Id}
+	v := ChargeCourse{Id: m.Id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
@@ -135,17 +135,40 @@ func UpdateTeacherById(m *Teacher) (err error) {
 	return
 }
 
-// DeleteTeacher deletes Teacher by Id and returns error if
+// DeleteChargeCourse deletes ChargeCourse by Id and returns error if
 // the record to be deleted doesn't exist
-func DeleteTeacher(id int) (err error) {
+func DeleteChargeCourse(id int) (err error) {
 	o := orm.NewOrm()
-	v := Teacher{Id: id}
+	v := ChargeCourse{Id: id}
 	// ascertain id exists in the database
 	if err = o.Read(&v); err == nil {
 		var num int64
-		if num, err = o.Delete(&Teacher{Id: id}); err == nil {
+		if num, err = o.Delete(&ChargeCourse{Id: id}); err == nil {
 			fmt.Println("Number of records deleted in database:", num)
 		}
 	}
 	return
+}
+
+func QueryChargeCourse(course_id int, ta_id int) []InCourse {
+	var records []InCourse
+	o := orm.NewOrm()
+	qs := o.QueryTable(new(InCourse))
+	cond := orm.NewCondition()
+	if course_id != -1 {
+		course, err := GetCourseById(course_id)
+		if err != nil {
+			return records
+		}
+		cond = cond.And("CourseId", course)
+	}
+	if ta_id != -1 {
+		ta, err := GetUserById(ta_id)
+		if err != nil {
+			return records
+		}
+		cond = cond.And("TaId", ta)
+	}
+	qs.SetCond(cond).All(&records)
+	return records
 }

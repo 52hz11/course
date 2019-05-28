@@ -13,7 +13,7 @@ import (
 type InRoll struct {
 	Id        int       `orm:"column(id);auto"`
 	RollId    *Roll     `orm:"column(roll_id);rel(fk)"`
-	StudentId *Student  `orm:"column(student_id);rel(fk)"`
+	StudentId *User     `orm:"column(student_id);rel(fk)"`
 	Time      time.Time `orm:"column(time);type(datetime);null"`
 }
 
@@ -165,7 +165,7 @@ func QueryInRoll(roll_id int, student_id int, time_str string) []InRoll {
 		cond = cond.And("RollId", roll)
 	}
 	if student_id != -1 {
-		student, err := GetStudentById(student_id)
+		student, err := GetUserById(student_id)
 		if err != nil {
 			return records
 		}

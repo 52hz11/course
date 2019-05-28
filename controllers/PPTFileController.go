@@ -51,15 +51,11 @@ func (this *PPTFileController) Get() {
 }
 
 func (this *PPTFileController) Post() {
-	course_id, err := this.GetInt("course_id")
-	if err != nil {
-		this.Abort(models.ErrJson("must have a course id"))
-	}
-	name := this.GetString("name")
+	course_key := this.GetString("course_key")
 	var ppt models.PptFile
-	course, err := models.GetCourseById(course_id)
+	course, err := models.GetCourseByKey(course_key)
 	if err != nil {
-		this.Abort(models.ErrJson("invalid course id"))
+		this.Abort(models.ErrJson("invalid course key"))
 	}
 	ppt.CourseId = course
 	file, head, err := this.GetFile("file")
@@ -68,7 +64,7 @@ func (this *PPTFileController) Post() {
 		this.Abort(models.ErrJson("error when trying to get file"))
 	}
 	ppt.FilePath = "./upload/" + models.GenerateKey() + "__" + head.Filename
-	ppt.Name = name
+	ppt.Name = head.Filename
 	id, err := models.AddPptFile(&ppt)
 	if err != nil {
 		this.Abort(models.ErrJson("add ppt file failed, database error"))

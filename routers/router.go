@@ -14,12 +14,12 @@ import (
 )
 
 func init() {
-	beego.Router("/student/?:id", &controllers.StudentController{})
-	beego.Router("/teacher/?:id", &controllers.TeacherController{})
+	beego.Router("/user/?:id", &controllers.UserController{})
 	beego.Router("/course", &controllers.CourseController{})
 	beego.Router("/in_course", &controllers.InCourseController{})
 	beego.Router("/roll", &controllers.RollController{})
 	beego.Router("/in_roll", &controllers.InRollController{})
 	beego.Router("homework", &controllers.HomeworkController{})
 	beego.Router("/ppt_file", &controllers.PPTFileController{})
+	beego.Router("/charge_course", &controllers.ChargeCourseController{})
 }

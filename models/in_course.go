@@ -10,9 +10,9 @@ import (
 )
 
 type InCourse struct {
-	Id        int      `orm:"column(id);auto"`
-	CourseId  *Course  `orm:"column(course_id);rel(fk)"`
-	StudentId *Student `orm:"column(student_id);rel(fk)"`
+	Id        int     `orm:"column(id);auto"`
+	CourseId  *Course `orm:"column(course_id);rel(fk)"`
+	StudentId *User   `orm:"column(student_id);rel(fk)"`
 }
 
 func (t *InCourse) TableName() string {
@@ -163,7 +163,7 @@ func QueryInCourse(course_id int, student_id int) []InCourse {
 		cond = cond.And("CourseId", course)
 	}
 	if student_id != -1 {
-		student, err := GetStudentById(student_id)
+		student, err := GetUserById(student_id)
 		if err != nil {
 			return records
 		}

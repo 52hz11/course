@@ -52,7 +52,7 @@ func (this *InRollController) Post() {
 		if err != nil {
 			this.Abort(models.ErrJson("invalid roll id"))
 		}
-		student, err := models.GetStudentById(student_id)
+		student, err := models.GetUserById(student_id)
 		if err != nil {
 			this.Abort(models.ErrJson("invalid student id"))
 		}

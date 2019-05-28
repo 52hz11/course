@@ -10,11 +10,12 @@ import (
 )
 
 type Course struct {
-	Id        int      `orm:"column(id);auto"`
-	Name      string   `orm:"column(name);size(40);null"`
-	Content   string   `orm:"column(content);size(200);null"`
-	CreatorId *Teacher `orm:"column(creator_id);rel(fk)"`
-	CourseKey string   `orm:"column(course_key);size(40);null"`
+	Id        int    `orm:"column(id);auto"`
+	Name      string `orm:"column(name);size(40);null"`
+	Content   string `orm:"column(content);size(200);null"`
+	CreatorId *User  `orm:"column(creator_id);rel(fk)"`
+	CourseKey string `orm:"column(course_key);size(40);null"`
+	ImgPath   string `orm:"column(img_path);size(40);null"`
 }
 
 func (t *Course) TableName() string {
@@ -161,7 +162,7 @@ func QueryCourse(id int, name string, content string, creator_id int, offset int
 		cond = cond.And("Id", id)
 	}
 	if creator_id != -1 {
-		creator, err := GetTeacherById(creator_id)
+		creator, err := GetUserById(creator_id)
 		if err != nil {
 			return courses
 		}
@@ -169,4 +170,13 @@ func QueryCourse(id int, name string, content string, creator_id int, offset int
 	}
 	qs.SetCond(cond).Filter("Name__contains", name).Filter("Content__contains", content).Limit(limit).Offset(offset).All(&courses)
 	return courses
+}
+
+func GetCourseByKey(key string) (v *Course, err error) {
+	o := orm.NewOrm()
+	v = &Course{CourseKey: key}
+	if err = o.Read(v, "CourseKey"); err == nil {
+		return v, nil
+	}
+	return nil, err
 }
