@@ -36,17 +36,26 @@ func (this *InCourseController) Get() {
 }
 
 func (this *InCourseController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		course_id := inputJSON.Get("course_id").MustInt()
 		student_id := inputJSON.Get("student_id").MustInt()
+		course_key := inputJSON.Get("course_key").MustString()
 		var incourse models.InCourse
 		course, err := models.GetCourseById(course_id)
 		if err != nil {
 			this.Abort(models.ErrJson("course not exist"))
 		}
+		if course.CourseKey != course_key {
+			this.Abort("invalid course key")
+		}
 		student, err := models.GetUserById(student_id)
 		if err != nil {
 			this.Abort(models.ErrJson("student not exist"))
+		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != student.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		incourse.CourseId = course
 		incourse.StudentId = student
@@ -62,6 +71,8 @@ func (this *InCourseController) Post() {
 }
 
 func (this *InCourseController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	course_id, err := this.GetInt("course_id")
 	if err != nil {
 		course_id = -1
@@ -74,6 +85,9 @@ func (this *InCourseController) Delete() {
 	if len(records) == 0 {
 		this.Abort(models.ErrJson("invalid in-course record"))
 	} else {
+		if sess.Get("id") == nil || sess.Get("id").(int) != student_id {
+			this.Abort(models.ErrJson("login expired"))
+		}
 		for _, r := range records {
 			models.DeleteInCourse(r.Id)
 		}

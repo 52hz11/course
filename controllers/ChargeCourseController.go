@@ -36,6 +36,8 @@ func (this *ChargeCourseController) Get() {
 }
 
 func (this *ChargeCourseController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		course_id := inputJSON.Get("course_id").MustInt()
 		ta_id := inputJSON.Get("ta_id").MustInt()
@@ -43,6 +45,9 @@ func (this *ChargeCourseController) Post() {
 		course, err := models.GetCourseById(course_id)
 		if err != nil {
 			this.Abort(models.ErrJson("course not exist"))
+		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		ta, err := models.GetUserById(ta_id)
 		if err != nil {
@@ -62,6 +67,8 @@ func (this *ChargeCourseController) Post() {
 }
 
 func (this *ChargeCourseController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	course_id, err := this.GetInt("course_id")
 	if err != nil {
 		course_id = -1
@@ -74,6 +81,10 @@ func (this *ChargeCourseController) Delete() {
 	if len(records) == 0 {
 		this.Abort(models.ErrJson("invalid charge-course record"))
 	} else {
+		course, _ := models.GetCourseById(course_id)
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
 		for _, r := range records {
 			models.DeleteChargeCourse(r.Id)
 		}

@@ -43,7 +43,8 @@ func (this *RollController) Get() {
 }
 
 func (this *RollController) Post() {
-	//fmt.Println(string(this.Ctx.Input.RequestBody))
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		//fmt.Println("111")
 		course_id := inputJSON.Get("course_id").MustInt()
@@ -60,10 +61,14 @@ func (this *RollController) Post() {
 			this.Abort(models.ErrJson("invalid data format"))
 		}
 		var roll models.Roll
-		roll.CourseId, err = models.GetCourseById(course_id)
+		course, err := models.GetCourseById(course_id)
 		if err != nil {
 			this.Abort(models.ErrJson("invalid course id"))
 		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
+		roll.CourseId = course
 		roll.Title = title
 		roll.BeginTime = begin_time
 		roll.EndTime = end_time
@@ -82,11 +87,17 @@ func (this *RollController) Post() {
 }
 
 func (this *RollController) Put() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		id := inputJSON.Get("id").MustInt()
 		roll, err := models.GetRollById(id)
 		if err != nil {
 			this.Abort(models.ErrJson("invalid roll id"))
+		}
+		roll.CourseId, _ = models.GetCourseById(roll.CourseId.Id)
+		if sess.Get("id") == nil || sess.Get("id").(int) != roll.CourseId.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		title := inputJSON.Get("title").MustString()
 		begin_time_str := inputJSON.Get("begin_time").MustString()
@@ -113,9 +124,19 @@ func (this *RollController) Put() {
 }
 
 func (this *RollController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := this.GetInt("id")
 	if err != nil {
 		this.Abort(models.ErrJson("invalid id"))
+	}
+	roll, err := models.GetRollById(id)
+	if err != nil {
+		this.Abort(models.ErrJson("roll doesn't exist"))
+	}
+	roll.CourseId, _ = models.GetCourseById(roll.CourseId.Id)
+	if sess.Get("id") == nil || sess.Get("id").(int) != roll.CourseId.CreatorId.Id {
+		this.Abort(models.ErrJson("login expired"))
 	}
 	err = models.DeleteRoll(id)
 	if err != nil {

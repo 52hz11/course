@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego/session"
 )
 
-var globalSessions *session.Manager
+var GlobalSessions *session.Manager
 
 func init() {
 	sessionConfig := &session.ManagerConfig{
@@ -16,6 +16,6 @@ func init() {
 		CookieLifeTime:  3600,
 		DisableHTTPOnly: true,
 	}
-	globalSessions, _ = session.NewManager("memory", sessionConfig)
-	go globalSessions.GC()
+	GlobalSessions, _ = session.NewManager("memory", sessionConfig)
+	go GlobalSessions.GC()
 }

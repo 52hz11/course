@@ -13,7 +13,7 @@ create table course(
 	content varchar(200),
 	creator_id int unsigned,
 	course_key varchar(40),
-	img_path varchar(40),
+	img_path varchar(100),
 	foreign key(creator_id) references user(id)
 );
 
@@ -44,6 +44,7 @@ create table homework(
 	course_id int unsigned,
 	title varchar(40),
 	content varchar(200),
+	deadline varchar(40),
 	foreign key(course_id) references course(id)
 );
 

@@ -12,6 +12,8 @@ type CourseController struct {
 }
 
 func (this *CourseController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	method := this.GetString("method")
 	if method == "data" {
 		id, err := this.GetInt("id")
@@ -40,7 +42,9 @@ func (this *CourseController) Get() {
 			tmpMap := make(map[string]interface{})
 			tmpMap["id"] = c.Id
 			tmpMap["creator_id"] = c.CreatorId.Id
-			tmpMap["course_key"] = c.CourseKey
+			if sess.Get("id") == nil || sess.Get("id").(int) != c.CreatorId.Id {
+				tmpMap["course_key"] = c.CourseKey
+			}
 			tmpMap["name"] = c.Name
 			tmpMap["content"] = c.Content
 			tmpMapArr[i] = tmpMap
@@ -63,11 +67,16 @@ func (this *CourseController) Get() {
 }
 
 func (this *CourseController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	method := this.GetString("method")
 	if method == "data" {
 		if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 			var course models.Course
 			creator_id := inputJSON.Get("creator_id").MustInt()
+			if sess.Get("id") == nil || sess.Get("id").(int) != creator_id {
+				this.Abort(models.ErrJson("login expired"))
+			}
 			course.CreatorId, _ = models.GetUserById(creator_id)
 			course.CourseKey = models.GenerateKey()
 			course.Name = inputJSON.Get("name").MustString()
@@ -94,6 +103,9 @@ func (this *CourseController) Post() {
 		if err != nil {
 			this.Abort(models.ErrJson("invalid course id"))
 		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
 		file, head, err := this.GetFile("file")
 		defer file.Close()
 		if err != nil {
@@ -113,12 +125,17 @@ func (this *CourseController) Post() {
 }
 
 func (this *CourseController) Put() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		var course *models.Course
 		id := inputJSON.Get("id").MustInt()
 		course, err := models.GetCourseById(id)
 		if err != nil {
 			this.Abort(models.ErrJson("course not exist"))
+		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		course.Name = inputJSON.Get("name").MustString()
 		course.Content = inputJSON.Get("content").MustString()
@@ -134,13 +151,18 @@ func (this *CourseController) Put() {
 }
 
 func (this *CourseController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := this.GetInt("id")
 	if err != nil {
 		this.Abort(models.ErrJson("invalid id"))
 	} else {
-		_, err := models.GetCourseById(id)
+		course, err := models.GetCourseById(id)
 		if err != nil {
 			this.Abort(models.ErrJson("course not exist"))
+		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		err = models.DeleteCourse(id)
 		if err != nil {

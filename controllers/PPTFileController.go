@@ -79,9 +79,19 @@ func (this *PPTFileController) Post() {
 }
 
 func (this *PPTFileController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := this.GetInt("id")
 	if err != nil {
 		this.Abort("invalid file id")
+	}
+	ppt, err := models.GetPptFileById(id)
+	if err != nil {
+		this.Abort(models.ErrJson("ppt not exist"))
+	}
+	ppt.CourseId, _ = models.GetCourseById(ppt.CourseId.Id)
+	if sess.Get("id") == nil || sess.Get("id") != ppt.CourseId.CreatorId.Id {
+		this.Abort(models.ErrJson("login expired"))
 	}
 	err = models.DeletePptFile(id)
 	if err != nil {

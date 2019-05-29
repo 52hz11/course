@@ -62,10 +62,17 @@ func (this *UserController) Get() {
 }
 
 func (this *UserController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &user); err == nil {
+		_, err := models.GetUserByToken(user.Token)
+		if err == nil {
+			this.Abort(models.ErrJson("token duplicated"))
+		}
 		id, err := models.AddUser(&user)
 		if err == nil {
+			sess.Set("id", int(id))
 			bodyJSON := simplejson.New()
 			bodyJSON.Set("status", "success")
 			bodyJSON.Set("id", id)
@@ -80,8 +87,13 @@ func (this *UserController) Post() {
 }
 
 func (this *UserController) Put() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &user); err == nil {
+		if sess.Get("id") == nil || sess.Get("id").(int) != user.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
 		err := models.UpdateUserById(&user)
 		if err == nil {
 			this.Ctx.Output.Body(models.SuccessJson())
@@ -94,7 +106,12 @@ func (this *UserController) Put() {
 }
 
 func (this *UserController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := strconv.Atoi(this.Ctx.Input.Param(":id"))
+	if sess.Get("id") == nil || sess.Get("id").(int) != id {
+		this.Abort(models.ErrJson("login expired"))
+	}
 	if err != nil {
 		this.Abort(models.ErrJson("invalid id"))
 	}

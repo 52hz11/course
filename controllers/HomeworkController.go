@@ -32,6 +32,7 @@ func (this *HomeworkController) Get() {
 		tmpMap["course_id"] = h.CourseId.Id
 		tmpMap["title"] = h.Title
 		tmpMap["content"] = h.Content
+		tmpMap["deadline"] = h.Deadline
 		tmpMapArr[i] = tmpMap
 	}
 	bodyJSON.Set("data", tmpMapArr)
@@ -40,14 +41,25 @@ func (this *HomeworkController) Get() {
 }
 
 func (this *HomeworkController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		course_id := inputJSON.Get("course_id").MustInt()
 		title := inputJSON.Get("title").MustString()
 		content := inputJSON.Get("content").MustString()
+		deadline := inputJSON.Get("deadline").MustString()
 		var homework models.Homework
-		homework.CourseId, _ = models.GetCourseById(course_id)
+		course, err := models.GetCourseById(course_id)
+		if err != nil {
+			this.Abort(models.ErrJson("invalid course id"))
+		}
+		if sess.Get("id") == nil || sess.Get("id").(int) != course.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
+		homework.CourseId = course
 		homework.Title = title
 		homework.Content = content
+		homework.Deadline = deadline
 		id, err := models.AddHomework(&homework)
 		if err != nil {
 			this.Abort(models.ErrJson("invalid data, check course id is valid"))
@@ -63,16 +75,24 @@ func (this *HomeworkController) Post() {
 }
 
 func (this *HomeworkController) Put() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		id := inputJSON.Get("id").MustInt()
 		title := inputJSON.Get("title").MustString()
 		content := inputJSON.Get("content").MustString()
+		deadline := inputJSON.Get("deadline").MustString()
 		homework, err := models.GetHomeworkById(id)
 		if err != nil {
 			this.Abort(models.ErrJson("homework not exist"))
 		}
+		homework.CourseId, _ = models.GetCourseById(homework.CourseId.Id)
+		if sess.Get("id") == nil || sess.Get("id").(int) != homework.CourseId.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
+		}
 		homework.Title = title
 		homework.Content = content
+		homework.Deadline = deadline
 		err = models.UpdateHomeworkById(homework)
 		if err != nil {
 			this.Abort(models.ErrJson("update homework failed, database error"))
@@ -82,9 +102,19 @@ func (this *HomeworkController) Put() {
 }
 
 func (this *HomeworkController) Delete() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := this.GetInt("id")
 	if err != nil {
 		this.Abort(models.ErrJson("homework not exist"))
+	}
+	homework, err := models.GetHomeworkById(id)
+	if err != nil {
+		this.Abort(models.ErrJson("homework not exist"))
+	}
+	homework.CourseId, _ = models.GetCourseById(homework.CourseId.Id)
+	if sess.Get("id") == nil || sess.Get("id").(int) != homework.CourseId.CreatorId.Id {
+		this.Abort(models.ErrJson("login expired"))
 	}
 	err = models.DeleteHomework(id)
 	if err != nil {

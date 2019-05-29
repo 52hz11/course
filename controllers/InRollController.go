@@ -39,6 +39,8 @@ func (this *InRollController) Get() {
 }
 
 func (this *InRollController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	if inputJSON, err := simplejson.NewJson(this.Ctx.Input.RequestBody); err == nil {
 		roll_id := inputJSON.Get("roll_id").MustInt()
 		student_id := inputJSON.Get("student_id").MustInt()
@@ -51,6 +53,10 @@ func (this *InRollController) Post() {
 		roll, err := models.GetRollById(roll_id)
 		if err != nil {
 			this.Abort(models.ErrJson("invalid roll id"))
+		}
+		roll.CourseId, _ = models.GetCourseById(roll.CourseId.Id)
+		if sess.Get("id") == nil || sess.Get("id").(int) != roll.CourseId.CreatorId.Id {
+			this.Abort(models.ErrJson("login expired"))
 		}
 		student, err := models.GetUserById(student_id)
 		if err != nil {

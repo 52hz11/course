@@ -14,6 +14,7 @@ type Homework struct {
 	CourseId *Course `orm:"column(course_id);rel(fk)"`
 	Title    string  `orm:"column(title);size(40);null"`
 	Content  string  `orm:"column(content);size(200);null"`
+	Deadline string  `orm:"column(deadline);size(40);null"`
 }
 
 func (t *Homework) TableName() string {

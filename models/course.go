@@ -15,7 +15,7 @@ type Course struct {
 	Content   string `orm:"column(content);size(200);null"`
 	CreatorId *User  `orm:"column(creator_id);rel(fk)"`
 	CourseKey string `orm:"column(course_key);size(40);null"`
-	ImgPath   string `orm:"column(img_path);size(40);null"`
+	ImgPath   string `orm:"column(img_path);size(100);null"`
 }
 
 func (t *Course) TableName() string {
