@@ -1,7 +1,6 @@
 create table user(
 	id int unsigned primary key auto_increment,
 	name varchar(40),
-	number int unsigned,
 	token varchar(40),
 	email varchar(40),
     school varchar(40),

@@ -78,7 +78,6 @@ func (this *UserController) Post() {
 			sess.Set("id", int(id))
 			bodyJSON := simplejson.New()
 			bodyJSON.Set("status", "success")
-			bodyJSON.Set("id", id)
 			body, _ := bodyJSON.Encode()
 			this.Ctx.Output.Body(body)
 		} else {

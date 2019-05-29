@@ -45,11 +45,11 @@ api全部遵循RESTFul规范，GET方法获取信息，POST方法上传信息，
 如果是POST请求，则请求体格式如下：
 ```
 {
-    "password" : "password",
-    "name" : "name"
+    "id" : id
+    "name" : "name",
+    ···
 }
 ```
-会返回学生id
 #### PUT
 供修改用户信息用，和POST类似，但是请求体中需要提供用户id，而且返回的json中不会包括id，只有当前用户可以修改当前用户账号
 #### DELETE

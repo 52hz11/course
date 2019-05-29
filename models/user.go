@@ -12,7 +12,6 @@ import (
 type User struct {
 	Id     int    `orm:"column(id);auto"`
 	Name   string `orm:"column(name);size(40);null"`
-	Number uint   `orm:"column(number);null"`
 	Token  string `orm:"column(token);size(40);null"`
 	Email  string `orm:"column(email);size(40);null"`
 	School string `orm:"column(school);size(40);null"`
