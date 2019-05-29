@@ -14,6 +14,8 @@ type UserController struct {
 }
 
 func (this *UserController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	method := this.GetString("method")
 	if method == "id" {
 		id, err := strconv.Atoi(this.Ctx.Input.Param(":id"))
@@ -21,6 +23,7 @@ func (this *UserController) Get() {
 			bodyJSON := simplejson.New()
 			user, err := models.GetUserById(id)
 			if err == nil {
+				sess.Set("id", id)
 				bodyJSON.Set("status", "success")
 				dataMap := make(map[string]interface{})
 				dataMap["id"] = id
