@@ -28,7 +28,6 @@ func (this *UserController) Get() {
 				dataMap := make(map[string]interface{})
 				dataMap["id"] = id
 				dataMap["name"] = user.Name
-				dataMap["number"] = user.Number
 				dataMap["email"] = user.Email
 				dataMap["school"] = user.School
 				dataMap["type"] = user.Type
@@ -50,7 +49,6 @@ func (this *UserController) Get() {
 			dataMap := make(map[string]interface{})
 			dataMap["id"] = user.Id
 			dataMap["name"] = user.Name
-			dataMap["number"] = user.Number
 			dataMap["token"] = user.Token
 			dataMap["email"] = user.Email
 			dataMap["school"] = user.School
