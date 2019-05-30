@@ -117,6 +117,7 @@ func (this *CourseController) Post() {
 			this.Abort(models.ErrJson("error when trying to get file"))
 		}
 		course.ImgPath = "./upload/" + models.GenerateKey() + "__" + head.Filename
+		fmt.Println(course.ImgPath)
 		err = models.UpdateCourseById(course)
 		if err != nil {
 			this.Abort(models.ErrJson(err.Error()))
