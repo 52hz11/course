@@ -24,7 +24,6 @@ func (this *UserController) Get() {
 			bodyJSON := simplejson.New()
 			user, err := models.GetUserById(id)
 			if err == nil {
-				sess.Set("id", id)
 				bodyJSON.Set("status", "success")
 				dataMap := make(map[string]interface{})
 				dataMap["id"] = id
