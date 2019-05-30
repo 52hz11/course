@@ -92,6 +92,7 @@ func (this *UserController) Put() {
 	//fmt.Println(string(this.Ctx.Input.RequestBody))
 	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
 	defer sess.SessionRelease(this.Ctx.ResponseWriter)
+	fmt.Println("cookie: " + this.Ctx.Input.Header("cookie"))
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &user); err == nil {
 		fmt.Println(sess.Get("id").(int))
