@@ -3,7 +3,6 @@ package controllers
 import (
 	"course/models"
 	"encoding/json"
-	"fmt"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -89,12 +88,12 @@ func (this *UserController) Post() {
 }
 
 func (this *UserController) Put() {
-	fmt.Println(string(this.Ctx.Input.RequestBody))
+	//fmt.Println(string(this.Ctx.Input.RequestBody))
 	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
 	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	var user models.User
 	if err := json.Unmarshal(this.Ctx.Input.RequestBody, &user); err == nil {
-		fmt.Println(sess.Get("id").(int))
+		//fmt.Println(sess.Get("id").(int))
 		if sess.Get("id") == nil || sess.Get("id").(int) != user.Id {
 			this.Abort(models.ErrJson("login expired"))
 		}
