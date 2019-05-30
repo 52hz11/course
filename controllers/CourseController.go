@@ -15,9 +15,8 @@ type CourseController struct {
 func (this *CourseController) Get() {
 	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
 	defer sess.SessionRelease(this.Ctx.ResponseWriter)
-	//fmt.Println(sess.Get("id").(int))
-	fmt.Println("cookie" + this.Ctx.Input.Header("cookie"))
-	fmt.Println("Cookie" + this.Ctx.Input.Header("Cookie"))
+	fmt.Println("cookie: " + this.Ctx.Input.Header("cookie"))
+	fmt.Println(sess.Get("id").(int))
 	method := this.GetString("method")
 	if method == "data" {
 		id, err := this.GetInt("id")
