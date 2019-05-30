@@ -78,6 +78,8 @@ func (this *CourseController) Post() {
 			var course models.Course
 			creator_id := inputJSON.Get("creator_id").MustInt()
 			if sess.Get("id") == nil || sess.Get("id").(int) != creator_id {
+				fmt.Println(sess.Get("id").(int))
+				fmt.Println(creator_id)
 				this.Abort(models.ErrJson("login expired"))
 			}
 			course.CreatorId, _ = models.GetUserById(creator_id)
