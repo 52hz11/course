@@ -12,6 +12,8 @@ type HomeworkController struct {
 }
 
 func (this *HomeworkController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	id, err := this.GetInt("id")
 	if err != nil {
 		id = -1

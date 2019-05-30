@@ -12,6 +12,8 @@ type PPTFileController struct {
 }
 
 func (this *PPTFileController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	method := this.GetString("method")
 	if method == "list" {
 		id, err := this.GetInt("id")
@@ -51,6 +53,8 @@ func (this *PPTFileController) Get() {
 }
 
 func (this *PPTFileController) Post() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	course_key := this.GetString("course_key")
 	var ppt models.PptFile
 	course, err := models.GetCourseByKey(course_key)

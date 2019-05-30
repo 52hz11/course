@@ -13,6 +13,8 @@ type InRollController struct {
 }
 
 func (this *InRollController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	roll_id, err := this.GetInt("roll_id")
 	if err != nil {
 		roll_id = -1

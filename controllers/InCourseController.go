@@ -12,6 +12,8 @@ type InCourseController struct {
 }
 
 func (this *InCourseController) Get() {
+	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
+	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	course_id, err := this.GetInt("course_id")
 	if err != nil {
 		course_id = -1
