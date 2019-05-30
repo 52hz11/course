@@ -29,7 +29,7 @@ func (this *ChargeCourseController) Get() {
 	for i, r := range records {
 		tmpMap := make(map[string]interface{})
 		tmpMap["course_id"] = r.CourseId.Id
-		tmpMap["ta_id"] = r.StudentId.Id
+		tmpMap["ta_id"] = r.TaId.Id
 		tmpMapArr[i] = tmpMap
 	}
 	bodyJSON.Set("data", tmpMapArr)

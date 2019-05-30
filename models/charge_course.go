@@ -150,10 +150,10 @@ func DeleteChargeCourse(id int) (err error) {
 	return
 }
 
-func QueryChargeCourse(course_id int, ta_id int) []InCourse {
-	var records []InCourse
+func QueryChargeCourse(course_id int, ta_id int) []ChargeCourse {
+	var records []ChargeCourse
 	o := orm.NewOrm()
-	qs := o.QueryTable(new(InCourse))
+	qs := o.QueryTable(new(ChargeCourse))
 	cond := orm.NewCondition()
 	if course_id != -1 {
 		course, err := GetCourseById(course_id)
