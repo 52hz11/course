@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"course/models"
+	"fmt"
 
 	"github.com/astaxie/beego"
 	"github.com/bitly/go-simplejson"
@@ -14,6 +15,7 @@ type CourseController struct {
 func (this *CourseController) Get() {
 	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
 	defer sess.SessionRelease(this.Ctx.ResponseWriter)
+	fmt.Println(sess.Get("id").(int))
 	method := this.GetString("method")
 	if method == "data" {
 		id, err := this.GetInt("id")
