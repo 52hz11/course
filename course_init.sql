@@ -12,7 +12,7 @@ create table course(
 	content varchar(200),
 	creator_id int unsigned,
 	course_key varchar(40),
-	img_path varchar(100),
+	img_path varchar(200),
 	foreign key(creator_id) references user(id)
 );
 
@@ -34,7 +34,7 @@ create table ppt_file(
 	id int unsigned auto_increment primary key,
 	course_id int unsigned,
 	name varchar(40),
-	file_path varchar(100),
+	file_path varchar(200),
 	foreign key(course_id) references course(id)
 );
 

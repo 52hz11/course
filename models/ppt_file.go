@@ -13,7 +13,7 @@ type PptFile struct {
 	Id       int     `orm:"column(id);auto"`
 	CourseId *Course `orm:"column(course_id);rel(fk)"`
 	Name     string  `orm:"column(name);size(40);null"`
-	FilePath string  `orm:"column(file_path);size(100);null"`
+	FilePath string  `orm:"column(file_path);size(200);null"`
 }
 
 func (t *PptFile) TableName() string {
