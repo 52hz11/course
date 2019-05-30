@@ -119,7 +119,7 @@ func (this *CourseController) Post() {
 		course.ImgPath = "./upload/" + models.GenerateKey() + "__" + head.Filename
 		err = models.UpdateCourseById(course)
 		if err != nil {
-			this.Abort(models.ErrJson("update head image failed, database error"))
+			this.Abort(models.ErrJson(err.Error()))
 		}
 		this.SaveToFile("file", course.ImgPath)
 		this.Ctx.Output.Body(models.SuccessJson())
