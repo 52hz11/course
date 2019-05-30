@@ -3,6 +3,7 @@ package controllers
 import (
 	"course/models"
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/astaxie/beego"
@@ -45,6 +46,7 @@ func (this *UserController) Get() {
 		bodyJSON := simplejson.New()
 		user, err := models.GetUserByToken(token)
 		if err == nil {
+			sess.Set("id", user.Id)
 			bodyJSON.Set("status", "success")
 			dataMap := make(map[string]interface{})
 			dataMap["id"] = user.Id
@@ -87,6 +89,7 @@ func (this *UserController) Post() {
 }
 
 func (this *UserController) Put() {
+	fmt.Println(this.Ctx.Input.RequestBody)
 	sess, _ := models.GlobalSessions.SessionStart(this.Ctx.ResponseWriter, this.Ctx.Request)
 	defer sess.SessionRelease(this.Ctx.ResponseWriter)
 	var user models.User
