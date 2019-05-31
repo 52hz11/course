@@ -45,7 +45,7 @@ func (this *CourseController) Get() {
 			tmpMap := make(map[string]interface{})
 			tmpMap["id"] = c.Id
 			tmpMap["creator_id"] = c.CreatorId.Id
-			if sess.Get("id") == nil || sess.Get("id").(int) != c.CreatorId.Id {
+			if sess.Get("id") == nil || sess.Get("id").(int) == c.CreatorId.Id {
 				tmpMap["course_key"] = c.CourseKey
 			}
 			tmpMap["name"] = c.Name
