@@ -6,6 +6,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/bitly/go-simplejson"
+	"github.com/tealeg/xlsx"
 )
 
 type InRollController struct {
@@ -24,20 +25,34 @@ func (this *InRollController) Get() {
 		student_id = -1
 	}
 	time := this.GetString("time")
+	file := xlsx.NewFile()
+	sheet, _ := file.AddSheet("Sheet1")
 	records := models.QueryInRoll(roll_id, student_id, time)
-	bodyJSON := simplejson.New()
-	bodyJSON.Set("status", "success")
-	tmpMapArr := make([]interface{}, len(records))
-	for i, r := range records {
-		tmpMap := make(map[string]interface{})
-		tmpMap["roll_id"] = r.RollId.Id
-		tmpMap["student_id"] = r.StudentId.Id
-		tmpMap["time"] = r.Time.Format("2006-01-02 15:04:05")
-		tmpMapArr[i] = tmpMap
+	for _, r := range records {
+		row := sheet.AddRow()
+		cell := row.AddCell()
+		r.StudentId, _ = models.GetUserById(r.StudentId.Id)
+		cell.Value = r.StudentId.Name
+		cell = row.AddCell()
+		cell.Value = r.Time.Format("2006-01-02 15:04:05")
 	}
-	bodyJSON.Set("data", tmpMapArr)
-	body, _ := bodyJSON.Encode()
-	this.Ctx.Output.Body(body)
+	file.Save("tmp.xlsx")
+	/*
+		bodyJSON := simplejson.New()
+		bodyJSON.Set("status", "success")
+		tmpMapArr := make([]interface{}, len(records))
+		for i, r := range records {
+			tmpMap := make(map[string]interface{})
+			tmpMap["roll_id"] = r.RollId.Id
+			tmpMap["student_id"] = r.StudentId.Id
+			tmpMap["time"] = r.Time.Format("2006-01-02 15:04:05")
+			tmpMapArr[i] = tmpMap
+		}
+		bodyJSON.Set("data", tmpMapArr)
+		body, _ := bodyJSON.Encode()
+		this.Ctx.Output.Body(body)
+	*/
+	this.Ctx.Output.Download("tmp.xlsx")
 }
 
 func (this *InRollController) Post() {
